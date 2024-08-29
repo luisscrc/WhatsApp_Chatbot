@@ -1,0 +1,4 @@
+chatbot
+1 cotizacion
+2 numero de cuenta
+3 redirecciona a WA sucursal (son como 5)

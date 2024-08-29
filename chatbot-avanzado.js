@@ -1,64 +1,89 @@
-// Invocamos el lector de qr code
-const qrcode = require('qrcode-terminal');
-const { Client, Buttons, List, MessageMedia } = require('whatsapp-web.js'); // Cambio en Buttons
-const client = new Client({puppeteer: {executablePath: 'C:/Program Files/Google/Chrome/Application/chrome.exe',}});
-// Entonces habilitamos al usuario a acceder al servicio de lectura del qr code
-client.on('qr', qr => {
-    qrcode.generate(qr, {small: true});
+const qrcode = require('qrcode-terminal'); // intento 1 de condicional 
+const { Client, MessageMedia } = require('whatsapp-web.js');
+
+const client = new Client({
+    puppeteer: {
+        executablePath: 'C:/Program Files/Google/Chrome/Application/chrome.exe',
+    },
 });
-// Después de eso, indica que todo está bien
+
+client.on('qr', qr => {
+    qrcode.generate(qr, { small: true });
+});
+
 client.on('ready', () => {
     console.log('¡Listo! WhatsApp conectado correctamente.');
 });
-// E inicia todo para hacer nuestra magia =)
-client.initialize();
-const delay = ms => new Promise(res => setTimeout(res, ms)); // Función que usamos para crear el delay entre una acción y otra
 
-// Base del Proyecto
-client.on('message', async msg => {
-    if (msg.body.match(/(que onda|buenos días|Buenos Días|buenos dias|información|yo quiero|como funciona|Que tal|hola|Hola|más información|imagenes|Buenas tardes|buenas tardes|buenos días|Buenos Días|audios|iptv)/i) && msg.from.endsWith('@c.us')) 
-    {
-        const chat = await msg.getChat();
-        const contact = await msg.getContact(); // Obteniendo el contacto
-        const name = contact.pushname; // Obteniendo el nombre del contacto
-        await client.sendMessage(msg.from,'¡Hola! '+ name.split(" ")[0] + ', bienvenid@ a SISCOM ELECTRONICS, por favor dime, ¿Hoy en qué podemos ayudarte?'); // Primera mensaje de texto
-        await delay(3000); // delay de 3 segundos
-        await chat.sendStateTyping(); // Simulación de que está escribiendo
-        await delay(3000); // Delay de 3 segundos
-        await client.sendMessage(msg.from, '0) Catálogo \n1) Cotización de productos. \n2) Número de cuenta de banco. \n3) Escoge la sucursal más cercana.');
+const sendDelayedMessage = async (chatId, messages) => {
+    for (const message of messages) {
+        await client.sendPresenceAvailable();
+        await client.sendMessage(chatId, message);
+        await new Promise(res => setTimeout(res, 1500)); // Delay de 1.5 segundos entre mensajes
     }
-            else if (msg.body !== null && msg.body === '1' && msg.from.endsWith('@c.us')){
-                await chat.sendStateTyping(); // Simulación de que está escribiendo
-                await client.sendMessage(msg.from, 'Has escogido la cotización de productos, dime qué categoría buscas.');
-                await delay(3000); // delay de 3 segundos   
-            }
+};
 
-            else if (msg.body !== null && msg.body === '2' && msg.from.endsWith('@c.us')){
-                await chat.sendStateTyping(); // Simulación de que está escribiendo
-                await client.sendMessage(msg.from, 'Has escogido la consulta de número de cuenta. :)');
-                await delay(3000); // delay de 3 segundos   
-            }
+client.on('message', async msg => {
+    const chat = await msg.getChat();
+    const contact = await msg.getContact();
+    const name = contact.pushname || 'allí';
 
-            else if (msg.body !== null && msg.body === '3' && msg.from.endsWith('@c.us')){
-                await chat.sendStateTyping(); // Simulación de que está escribiendo
-                await client.sendMessage(msg.from, 'Has escogido redirección de tienda. :)');
-                await delay(3000); // delay de 3 segundos 
-            }
-            else if(msg.body !== null && msg.body === '0' && msg.from.endsWith('@c.us')) { 
-                await chat.sendStateTyping(); // Simulación de que está escribiendo
-                await client.sendMessage(msg.from, 'Este es nuestro catálogo, te invito a consultarlo. :)');
-                await delay(3000); // delay de 3 segundos
-                const doc1 = MessageMedia.fromFilePath('./catalogo.pdf'); // pdf para ser enviado
-                await client.sendMessage(msg.from, doc1); // Enviando el pdf
-            }    
-            else {
-                await chat.sendStateTyping(); // Simulación de que está escribiendo
-                await client.sendMessage(msg.from, 'Prueba de nuevo :)');
-                await delay(3000); // delay de 3 segundos
-            }   
-    await delay(3000); // delay de 3 segundos
-    await chat.sendStateTyping(); // Simulación de que está escribiendo
-    await delay(3000); // Delay de 3 segundos
-    await client.sendMessage(msg.from, 'Muchas gracias por consultar este chatbot, estaremos siempre dispuestos a ayudarte en tus proyectos.');
-    
+    const greetings = ['que onda', 'buenos días', 'buenos dias', 'información', 'yo quiero', 'como funciona', 'que tal', 'hola', 'más información', 'imágenes', 'buenas tardes', 'audios', 'iptv'];
+    const zero = '0';
+    const one = '1';
+    const two = '2';
+    const three = '3';
+    const messageContent = msg.body.toLowerCase();
+
+    if (greetings.some(greet => messageContent.includes(greet)) && msg.from.endsWith('@c.us')) {
+        await sendDelayedMessage(msg.from, [
+            `¡Hola, ${name.split(" ")[0]}! Bienvenid@ a SISCOM ELECTRONICS. ¿En qué podemos ayudarte hoy?`,
+            'Por favor, selecciona una de las siguientes opciones enviando el número correspondiente:\n\n0) Ver catálogo\n1) Cotización de productos\n2) Número de cuenta bancaria\n3) Sucursales cercanas'
+        ]);
+    // esperar a que el cliente responda con un número
+    } else if (msg.from.endsWith('@c.us')) {
+        console.log('Else if.'); // Mensaje de prueba
+        switch (messageContent) {
+            case zero:
+                try {
+                    console.log('zero try'); // Mensaje de prueba
+                    const catalog = MessageMedia.fromFilePath('./catalogo.pdf');
+                    await client.sendMessage(msg.from, catalog, { caption: 'Aquí tienes nuestro catálogo actualizado. ¡Échale un vistazo!' });
+                } catch (error) {
+                    console.log('zero catch'); // Mensaje de prueba
+                    await client.sendMessage(msg.from, 'Lo siento, hubo un error al enviar el catálogo. Por favor, intenta nuevamente más tarde.');
+                    console.error('Error al enviar el catálogo:', error);
+                }
+                break;
+            case one:
+                console.log('one'); // Mensaje de prueba
+                await sendDelayedMessage(msg.from, [
+                    'Has elegido *Cotización de productos*.',
+                    'Por favor, indícanos la categoría del producto que buscas.'
+                ]);
+                break;
+            case two:
+                console.log('two'); // Mensaje de prueba
+                await sendDelayedMessage(msg.from, [
+                    'Has elegido *Número de cuenta bancaria*.',
+                    'Nuestro número de cuenta es: 1234-5678-9012-3456. Banco XYZ.'
+                ]);
+                break;
+            case three:
+                console.log('three'); // Mensaje de prueba
+                await sendDelayedMessage(msg.from, [
+                    'Has elegido *Sucursales cercanas*.',
+                    'Por favor, comparte tu ubicación para ayudarte a encontrar la sucursal más cercana.'
+                ]);
+                break;
+            default:
+                await sendDelayedMessage(msg.from, [
+                    'Lo siento, no he entendido tu solicitud.',
+                    'Por favor, elige una opción válida o escribe "Hola" para ver el menú principal.'
+                ]);
+                break;
+        }
+    } 
 });
+
+client.initialize();

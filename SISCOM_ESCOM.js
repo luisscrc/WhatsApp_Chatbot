@@ -5,9 +5,8 @@ const delay = ms => new Promise(res => setTimeout(res, ms));
 
 const menu = {
   '1': { name: 'SISCOM UPIITA', price: 5551879821 },
-  '2': { name: 'SISCOM ESCOM', price: 5573728921 },
-  '3': { name: 'SISCOM ZACATENCO', price: 5564357110 },
-  '4': { name: 'SISCOM LINDAVISTA', price: 5564357110 }
+  '2': { name: 'SISCOM ZACATENCO', price: 5564357110 },
+  '3': { name: 'SISCOM LINDAVISTA', price: 5564357110 }
 };
 
 const opciones = {
@@ -38,7 +37,7 @@ const sendDelayedMessage = async (chatId, messages) => {
         const name1 = contact.pushname || '';
         if ((message.body.toLowerCase() === 'HOLA'|| message.body === 'Hola'|| message.body === 'hola'|| message.body === 'Buenas tardes'|| message.body === 'buenas tardes'|| message.body === 'buenos días') && message.from.endsWith('@c.us')) {
             await sendDelayedMessage(message.from,[
-                `¡Hola, ${name1.split(" ")[0]}! Bienvenid@ a *SISCOM ELECTRONICS*. `,
+                `¡Hola, ${name1.split(" ")[0]}! Bienvenid@ a *SISCOM ELECTRONICS ESCOM*. `,
             ]);
             await delay(1000); //delay de 3 segundos
             await client.sendMessage(message.from, img1, {caption: 'Comencemos escogiendo ¿A qué sucursal te quieres comunicar?'}); //Enviando a imagenlet options = '';
@@ -47,7 +46,7 @@ const sendDelayedMessage = async (chatId, messages) => {
             options += `${key}. ${value.name} \n`;
             }
         await delay(1000); //Delay de 3 segundos
-        await client.sendMessage(message.from,`Chat de opciones:\n${options}\nDigíte el *número* de la opción deseada.`);
+        await client.sendMessage(message.from,`Chat de opciones:\n${options}\nDigíte el *número* de la opción deseada. Si no quieres cambiar de sucursal digíta "continuar".`);
         } 
         else if (Object.keys(menu).includes(message.body) && !message.fromMe) {
         const selectedOption = menu[message.body];
@@ -65,7 +64,7 @@ const sendDelayedMessage = async (chatId, messages) => {
         await client.sendMessage(message.from,'De acuerdo, continuemos con su visita. Si desea contactar con otra sucursal digíte el *número* del chat de opciones. Si ya está en el chat donde quiere comunicarse envie *"continuar"* para mostrar las opciones.');
       } else if (message.body.toLowerCase() === 'continuar' && !message.fromMe) {
         if (!client.order || client.order.items.length === 0) {
-          await delay(1000); //Delay de 3 segundos
+          await delay(1000); //Delay de 3 segundos 
           await client.sendMessage(message.from,'Por favor, escoja una opción de nuestro menú.');
           return;
         }

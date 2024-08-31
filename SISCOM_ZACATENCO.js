@@ -6,8 +6,7 @@ const delay = ms => new Promise(res => setTimeout(res, ms));
 const menu = {
   '1': { name: 'SISCOM UPIITA', price: 5551879821 },
   '2': { name: 'SISCOM ESCOM', price: 5573728921 },
-  '3': { name: 'SISCOM ZACATENCO', price: 5564357110 },
-  '4': { name: 'SISCOM LINDAVISTA', price: 5564357110 }
+  '3': { name: 'SISCOM LINDAVISTA', price: 5564357110 }
 };
 
 const opciones = {
@@ -38,7 +37,7 @@ const sendDelayedMessage = async (chatId, messages) => {
         const name1 = contact.pushname || '';
         if ((message.body.toLowerCase() === 'HOLA'|| message.body === 'Hola'|| message.body === 'hola'|| message.body === 'Buenas tardes'|| message.body === 'buenas tardes'|| message.body === 'buenos días') && message.from.endsWith('@c.us')) {
             await sendDelayedMessage(message.from,[
-                `¡Hola, ${name1.split(" ")[0]}! Bienvenid@ a *SISCOM ELECTRONICS*. `,
+                `¡Hola, ${name1.split(" ")[0]}! Bienvenid@ a *SISCOM ELECTRONICS ZACATENCO*. `,
             ]);
             await delay(1000); //delay de 3 segundos
             await client.sendMessage(message.from, img1, {caption: 'Comencemos escogiendo ¿A qué sucursal te quieres comunicar?'}); //Enviando a imagenlet options = '';
